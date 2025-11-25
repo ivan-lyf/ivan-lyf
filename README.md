@@ -34,6 +34,13 @@
 
 > A few things I’m proud of — more in my repos 👇
 
+#### UBC Rocket
+Member of the TVR softwareteam.  
+**Tech:** C++, QML, QtCreator 
+- Contributed to the development of ground-control-station
+- Works with hardware data such as radio and sensors
+- Maintain UBC Rocket's official website
+
 #### 🛰 Rate My Food UBC
 Full-stack web app for rating UBC residence dishes.  
 **Tech:** React, Chakra UI, Supabase, Docker  
