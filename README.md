@@ -12,8 +12,7 @@
 ### 🚀 What I’m into
 
 - 🛰️ Embedded systems, FPGAs, and low-level C
-- 💻 Full-stack web apps with React + Node
-- 🎮 Graphics / simulations and performance-focused C++
+- 💻 Full-stack apps with React + Node
 
 ---
 
@@ -23,16 +22,22 @@
 `C` • `C++` • `Java` • `JavaScript` • `SystemVerilog` • `Python`
 
 #### Frontend
-`React` • `Chakra UI` • `HTML` • `CSS`
+`React` • `Chakra UI` • `React native`  •  `HTML` • `CSS`
 
 #### Backend & DB
-`Node.js` • `Express` • `MongoDB` • `firebase` 
+`Node.js` • `Supabase` • `Firebase` 
 
 ---
 
 ### 📌 Featured Projects
 
 > A few things I’m proud of — more in my repos 👇
+
+#### CS2 Tactics
+A react native app for all CS2 Players
+**Tech:** React native, Expo, Firebase
+- An reactive native app that allows user to post, share, and view lineups and tactics in CS2
+- Room feature that allows real-time tactics play within a team
 
 #### UBC Rocket
 Member of the TVR softwareteam.  
@@ -43,21 +48,20 @@ Member of the TVR softwareteam.
 
 #### 🛰 Rate My Food UBC
 Full-stack web app for rating UBC residence dishes.  
-**Tech:** React, Chakra UI, Supabase, Docker  
+**Tech:** React, Chakra UI, Supabase  
 - Built user authentication, per-dish comments, and a leaderboard of top dishes  
-- Designed responsive UI and deployed a containerized dev workflow
+- Call on Nutrislices's public API for scraping menu every day
+- Built in AI agent to provide recommended dishes of the day
 
 #### 🎮 Gravity Sandbox
 2D physics sandbox written in C++ / Qt.  
 **Tech:** C++, Qt Quick 3D  
 - Implemented an n-body gravity simulation with real-time rendering  
-- Optimized update loop to keep frame rates smooth with many bodies
 
 #### 🔧 FPGA Tron Light Cycle (CPEN 211)
 Retro-style game on an FPGA using custom video output.  
 **Tech:** C, SystemVerilog, DE10-Lite  
 - Wrote VGA drawing routines and input handling for real-time gameplay  
-- Designed and simulated hardware modules for stable, glitch-free logic
 
 ---
 
