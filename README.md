@@ -11,7 +11,7 @@
 
 ### 🚀 What I’m into
 
-- 🛰️ Embedded systems, FPGAs, and low-level C
+- 🛰️ Embedded system, lower level C
 - 💻 Full-stack apps with React + Node
 
 ---
@@ -22,7 +22,7 @@
 `C` • `C++` • `Java` • `JavaScript` • `SystemVerilog` • `Python`
 
 #### Frontend
-`React` • `Chakra UI` • `React native`  •  `HTML` • `CSS`
+`React` • `Tailwind'
 
 #### Backend & DB
 `Node.js` • `Supabase` • `Firebase` 
