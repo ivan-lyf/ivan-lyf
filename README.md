@@ -1,6 +1,6 @@
 <!-- Header -->
 <h1 align="center">Hey, I'm Ivan 👋</h1>
-<h3 align="center">Second-year Computer Engineering @ UBC • Software & Embedded Systems</h3>
+<h3 align="center">Third-year Computer Engineering @ UBC • Software & Embedded Systems</h3>
 
 <p align="center">
   <a href="https://www.linkedin.com/in/your-linkedin/">LinkedIn</a> •
@@ -12,7 +12,7 @@
 ### 🚀 What I’m into
 
 - 🛰️ Embedded system, lower level C
-- 💻 Full-stack apps with React + Node
+- 💻 Full-stack applications
 
 ---
 
@@ -20,12 +20,6 @@
 
 #### Languages
 `C` • `C++` • `Java` • `JavaScript` • `SystemVerilog` • `Python`
-
-#### Frontend
-`React` • `Tailwind'
-
-#### Backend & DB
-`Node.js` • `Supabase` • `Firebase` 
 
 ---
 
