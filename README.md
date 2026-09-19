@@ -48,6 +48,12 @@ A personal site rendered onto a 3D Macintosh you can orbit and zoom into.
 **Tech:** JavaScript, three.js
 - Profile-driven desktop engine with windows, apps, and a read-only terminal over a virtual filesystem
 
+#### 🏔️ [Whistler Blackcomb Forecast](https://github.com/ivan-lyf/whistler_weather_forecast)
+Mountain-specific forecast app that corrects generic weather models using Whistler's local forecast errors.  
+**Tech:** Python, FastAPI, PostgreSQL, LightGBM, Next.js, Docker
+- Trained LightGBM correction models on archived GFS forecasts vs. ECCC / Open-Meteo observations going back to 2022
+- Forecasts alpine snowfall, wind, freezing level, and precip type across base / mid / alpine bands, with SMS alerts via Twilio
+
 #### 💣 [CS2 Nade Guide](https://github.com/ivan-lyf/cs_nade)
 Native iPhone app for saving and sharing CS2 grenade lineups and tactics.  
 **Tech:** SwiftUI, SwiftData + CloudKit, Supabase
