@@ -154,7 +154,7 @@ a(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 
   f'role="img" aria-label="fastfetch readout for Ivan Luo">')
 a("<style>"
   + "".join(font_face(w, p, chars) for w, p in FONT_FILES.items())
-  + f".mono{{font-family:FetchMono,monospace;font-size:{FONT}px;white-space:pre}}"
+  + f".mono{{font-family:FetchMono,monospace;font-size:{FONT}px}}"
   + (".in{opacity:1}" if STATIC else ".in{opacity:0;animation:in .18s ease-out forwards}") +
   "@keyframes in{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}"
   ".blink{animation:blink 1.05s steps(1) infinite}"
@@ -211,11 +211,14 @@ for i, segs in enumerate(LINES):
         continue
     y = body_top + i * LH + FONT
     delay = T_OUT + i * T_LINE
-    a(f'<g class="in" style="animation-delay:{delay:.3f}s"><text class="mono" y="{y}">')
-    for col, txt, color, bold in segs:
-        w = ' font-weight="700"' if bold else ""
-        a(f'<tspan x="{info_x + col * CW:.1f}" fill="{color}"{w}>{escape(txt)}</tspan>')
-    a("</text></g>")
+    # Keep the whole <text> on one source line: whitespace between tspans is rendered
+    # by some browsers (Safari/Firefox) as line breaks or extra spaces.
+    spans = "".join(
+        f'<tspan x="{info_x + col * CW:.1f}" fill="{color}"{" font-weight=\"700\"" if bold else ""}>'
+        f'{escape(txt)}</tspan>'
+        for col, txt, color, bold in segs
+    )
+    a(f'<g class="in" style="animation-delay:{delay:.3f}s"><text class="mono" y="{y}">{spans}</text></g>')
 
 # Colour dots
 i = len(LINES) + 1
