@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
+# /// script
+# dependencies = ["fonttools", "brotli"]
+# ///
 """Generate fetch.svg: an animated, Catppuccin Mocha fastfetch readout for the profile README.
 
-Edit LINES below, then run:  python3 scripts/gen_fetch.py
+Edit LINES below, then run:  uv run scripts/gen_fetch.py
+  --static  writes the finished frame (no animation), for checking the layout.
+
+The font (DejaVu Sans Mono, subset) is embedded in the SVG, so the layout is the
+same on every machine instead of depending on the viewer's installed fonts.
 """
+import base64
+import io
+import sys
 from pathlib import Path
+
+from fontTools import subset
+from fontTools.ttLib import TTFont
 from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parent.parent
 ART = (ROOT / "scripts" / "pikachu.txt").read_text(encoding="utf-8").splitlines()
-OUT = ROOT / "fetch.svg"
+STATIC = "--static" in sys.argv
+OUT = ROOT / ("fetch-static.svg" if STATIC else "fetch.svg")
+FONT_FILES = {
+    400: "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+    700: "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
+}
 
 # Catppuccin Mocha (same palette as ~/.config/fastfetch/config.jsonc)
 C = dict(
@@ -59,7 +77,7 @@ DOTS = [C[k] for k in ("red", "peach", "yellow", "green", "teal", "blue", "mauve
 
 # Geometry
 FONT = 14
-CW = 8.43           # monospace advance at 14px (0.6em is typical)
+CW = FONT * 1233 / 2048   # DejaVu Sans Mono advance (1233 of 2048 units)
 LH = 21             # line height
 PAD = 28
 BAR = 34            # title bar height
@@ -82,8 +100,27 @@ info_h = n_info * LH
 art_h = len(ART) * CELL_H
 body_h = max(info_h, art_h)
 final_prompt_y = body_top + body_h + 26
-W = int(info_x + 60 * CW + PAD)
+info_cols = max(col + len(txt) for segs in LINES for col, txt, *_ in segs)
+W = int(info_x + info_cols * CW + PAD + 4)
 H = int(final_prompt_y + PAD - 6)
+
+
+def font_face(weight, path, chars):
+    """Subset a font to the characters used and return an @font-face rule with it inlined."""
+    font = TTFont(path)
+    opts = subset.Options()
+    opts.flavor = "woff2"
+    opts.layout_features = []
+    opts.name_IDs = [0, 1, 2, 3]   # keep copyright + family names
+    sub = subset.Subsetter(opts)
+    sub.populate(text=chars)
+    sub.subset(font)
+    font.flavor = "woff2"
+    buf = io.BytesIO()
+    font.save(buf)
+    data = base64.b64encode(buf.getvalue()).decode()
+    return (f"@font-face{{font-family:FetchMono;font-weight:{weight};"
+            f"src:url(data:font/woff2;base64,{data}) format('woff2')}}")
 
 
 def braille_dots(ch):
@@ -101,18 +138,24 @@ def prompt(y, cls=""):
     return (
         f'<text class="mono {cls}" x="{PAD}" y="{y}">'
         f'<tspan fill="{C["blue"]}" font-weight="700">~</tspan>'
-        f'<tspan fill="{C["green"]}" dx="{CW}">❯</tspan></text>'
+        f'<tspan x="{PAD + 2 * CW:.1f}" fill="{C["green"]}">❯</tspan></text>'
     )
 
+
+used = set(CMD + "~❯ivan@github: ")
+for segs in LINES:
+    for _, txt, *_ in segs:
+        used |= set(txt)
+chars = "".join(sorted(used))
 
 out = []
 a = out.append
 a(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
   f'role="img" aria-label="fastfetch readout for Ivan Luo">')
 a("<style>"
-  ".mono{font-family:'JetBrains Mono','SF Mono','Cascadia Code',Menlo,Consolas,'DejaVu Sans Mono',monospace;"
-  f"font-size:{FONT}px;white-space:pre}}"
-  ".in{opacity:0;animation:in .18s ease-out forwards}"
+  + "".join(font_face(w, p, chars) for w, p in FONT_FILES.items())
+  + f".mono{{font-family:FetchMono,monospace;font-size:{FONT}px;white-space:pre}}"
+  + (".in{opacity:1}" if STATIC else ".in{opacity:0;animation:in .18s ease-out forwards}") +
   "@keyframes in{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}"
   ".blink{animation:blink 1.05s steps(1) infinite}"
   "@keyframes blink{50%{opacity:0}}"
@@ -128,24 +171,28 @@ a(f'<text class="mono" x="{W/2}" y="{BAR/2 + 4.5}" text-anchor="middle" fill="{C
   f'font-size="12">ivan@github: ~</text>')
 
 # Prompt + typed command (revealed by a clip that grows one character per keystroke)
-cmd_x = PAD + 3 * CW
+cmd_x = PAD + 4 * CW
 steps = len(CMD)
-widths = ";".join(f"{i * CW:.2f}" for i in range(steps + 1))
+widths = ";".join(f"{max(0, i * CW - 1.5):.2f}" for i in range(steps + 1))
 keytimes = ";".join(f"{i / steps:.4f}" for i in range(steps + 1))
 dur = steps * T_KEY
-a(f'<clipPath id="type"><rect x="{cmd_x}" y="{prompt_y - FONT}" width="0" height="{FONT + 6}">'
-  f'<animate attributeName="width" values="{widths}" keyTimes="{keytimes}" calcMode="discrete" '
-  f'begin="{T_TYPE}s" dur="{dur:.3f}s" fill="freeze"/></rect></clipPath>')
-a(prompt(prompt_y))
-a(f'<text class="mono" x="{cmd_x}" y="{prompt_y}" fill="{C["text"]}" clip-path="url(#type)">{CMD}</text>')
-# Cursor: follows the typing, then disappears on enter
-xs = ";".join(f"{cmd_x + i * CW:.2f}" for i in range(steps + 1))
-a(f'<rect x="{cmd_x}" y="{prompt_y - FONT + 1}" width="{CW}" height="{FONT + 3}" fill="{C["text"]}" opacity=".85">'
-  f'<animate attributeName="x" values="{xs}" keyTimes="{keytimes}" calcMode="discrete" '
-  f'begin="{T_TYPE}s" dur="{dur:.3f}s" fill="freeze"/>'
-  f'<animate attributeName="opacity" values=".85;0;.85" keyTimes="0;.5;1" dur="1.05s" '
-  f'calcMode="discrete" repeatCount="indefinite" end="{T_OUT - 0.2:.2f}s"/>'
-  f'<set attributeName="visibility" to="hidden" begin="{T_OUT - 0.2:.2f}s"/></rect>')
+if STATIC:
+    a(prompt(prompt_y))
+    a(f'<text class="mono" x="{cmd_x}" y="{prompt_y}" fill="{C["text"]}">{CMD}</text>')
+else:
+    a(f'<clipPath id="type"><rect x="{cmd_x}" y="{prompt_y - FONT}" width="0" height="{FONT + 6}">'
+      f'<animate attributeName="width" values="{widths}" keyTimes="{keytimes}" calcMode="discrete" '
+      f'begin="{T_TYPE}s" dur="{dur:.3f}s" fill="freeze"/></rect></clipPath>')
+    a(prompt(prompt_y))
+    a(f'<text class="mono" x="{cmd_x}" y="{prompt_y}" fill="{C["text"]}" clip-path="url(#type)">{CMD}</text>')
+    # Cursor: follows the typing, then disappears on enter
+    xs = ";".join(f"{cmd_x + i * CW:.2f}" for i in range(steps + 1))
+    a(f'<rect x="{cmd_x}" y="{prompt_y - FONT + 1}" width="{CW}" height="{FONT + 3}" fill="{C["text"]}" opacity=".85">'
+      f'<animate attributeName="x" values="{xs}" keyTimes="{keytimes}" calcMode="discrete" '
+      f'begin="{T_TYPE}s" dur="{dur:.3f}s" fill="freeze"/>'
+      f'<animate attributeName="opacity" values=".85;0;.85" keyTimes="0;.5;1" dur="1.05s" '
+      f'calcMode="discrete" repeatCount="indefinite" end="{T_OUT - 0.2:.2f}s"/>'
+      f'<set attributeName="visibility" to="hidden" begin="{T_OUT - 0.2:.2f}s"/></rect>')
 
 # Pikachu: braille dots drawn as circles, one row at a time
 for r, line in enumerate(ART):
